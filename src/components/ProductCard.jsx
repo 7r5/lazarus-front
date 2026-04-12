@@ -1,43 +1,57 @@
-const getProductImage = (cat) => {
-  const images = {
-    'Calzado': 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=600',
-    'Accesorios': 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=600',
-    'Ropa': 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=600',
-    'default': 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=600'
-  };
-  return images[cat] || images['default'];
-};
-
 export default function ProductCard({ product }) {
+  // AJUSTE AQUÍ:
+  // Definimos la fuente de la imagen dinámicamente.
+  // Usamos product.image (o product.imageUrl si así se llama en tu JSON).
+  // Incluimos un "fallback" (una imagen de respaldo) por si el producto no tiene imagen.
+  const imageSrc = product.imageUrl || 'https://via.placeholder.com/400x300?text=Sin+Imagen';
+
   return (
-    <div className="bg-white rounded-2xl overflow-hidden border border-slate-200 transition-all hover:shadow-xl hover:shadow-slate-200/50 group">
-      <div className="aspect-[4/5] overflow-hidden bg-slate-100">
+    <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300 border border-slate-100 flex flex-col h-full group">
+      
+      {/* Contenedor de la Imagen */}
+      <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
         <img 
-          src={getProductImage(product.category)}
+          // VINCU_LAMOS LA URL AQUÍ:
+          src={imageSrc} 
           alt={product.name}
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+          // object-cover asegura que la imagen llene el espacio sin deformarse
+          // object-center centra la imagen si se recorta
+          className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
+          // loading="lazy" mejora el rendimiento cargando la imagen solo cuando es visible
+          loading="lazy"
         />
-      </div>
-      <div className="p-6">
-        <div className="flex justify-between items-start mb-2">
-          <span className="text-[10px] font-bold uppercase tracking-widest text-blue-500 bg-blue-50 px-2 py-1 rounded">
+        {/* Badge de Categoría (Opcional, si quieres mostrarla) */}
+        {product.category && (
+          <span className="absolute top-3 left-3 bg-white/80 backdrop-blur-sm text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md shadow-sm border border-white/10">
             {product.category}
           </span>
-          <span className="text-xs font-medium text-slate-400 italic">ID: {product.id}</span>
+        )}
+      </div>
+
+      {/* Información del Producto */}
+      <div className="p-5 flex flex-col flex-grow">
+        {/* Nombre del Producto */}
+        <h3 className="text-lg font-bold text-slate-800 leading-tight mb-1 group-hover:text-blue-600 transition-colors">
+          {product.name}
+        </h3>
+        
+        {/* Talla */}
+        <p className="text-slate-500 text-sm mb-4">
+          Talla: <span className="font-semibold text-slate-700">{product.size}</span>
+        </p>
+        
+        {/* Precio y Acción (Al final de la tarjeta) */}
+        <div className="flex justify-between items-center mt-auto pt-4 border-t border-slate-50">
+          <span className="text-2xl font-black text-blue-600">
+            {/* Formateamos el precio con comas (ej. $1,200) */}
+            ${product.price.toLocaleString('es-MX')}
+          </span>
+          <button className="bg-slate-900 text-white p-2.5 rounded-xl hover:bg-blue-600 transition-colors shadow-sm active:scale-95">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </button>
         </div>
-        <h3 className="text-lg font-bold text-slate-800 mb-1 leading-tight">{product.name}</h3>
-        <p className="text-2xl font-black text-slate-900 mb-4">${product.price}</p>
-        <div className="flex gap-2 mb-6">
-          <div className="bg-slate-50 border border-slate-100 px-3 py-1 rounded-md text-[11px] font-semibold text-slate-500">
-            TALLA {product.size}
-          </div>
-          <div className="bg-slate-50 border border-slate-100 px-3 py-1 rounded-md text-[11px] font-semibold text-slate-500 uppercase">
-            {product.color}
-          </div>
-        </div>
-        <button className="w-full bg-slate-900 hover:bg-black text-white text-xs font-bold py-3 rounded-lg transition-colors">
-          VER DETALLES
-        </button>
       </div>
     </div>
   );
