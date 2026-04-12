@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getProducts, filterProducts } from './services/api';
+import { getProducts, filterProducts, getCategories, getSizes } from './services/api';
 import Sidebar from './components/Sidebar';
 import ProductCard from './components/ProductCard';
 
@@ -8,25 +8,34 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [activeFilters, setActiveFilters] = useState({ category: '', size: '' });
   
-  // Estos datos deberían venir de tu API, los pongo aquí como placeholder
-  const [availableCategories, setAvailableCategories] = useState(['Calzado', 'Accesorios', 'Ropa']);
-  const [availableSizes, setAvailableSizes] = useState(['CH', 'M', 'G', '42', '44']);
+  // Estados dinámicos alimentados por la API
+  const [availableCategories, setAvailableCategories] = useState([]);
+  const [availableSizes, setAvailableSizes] = useState([]);
 
-  const loadData = async () => {
+  // Carga inicial de datos: Productos, Categorías y Tallas
+  const loadInitialData = async () => {
     setLoading(true);
     try {
-      const res = await getProducts();
-      setProducts(res.data);
-      // Aquí podrías cargar también las categorías y tallas reales desde el backend
+      const [prodRes, catRes, sizeRes] = await Promise.all([
+        getProducts(),
+        getCategories(),
+        getSizes()
+      ]);
+      
+      setProducts(prodRes.data);
+      setAvailableCategories(catRes.data);
+      setAvailableSizes(sizeRes.data);
     } catch (error) {
-      console.error("Error cargando productos:", error);
+      console.error("Error cargando datos iniciales:", error);
     } finally {
       setLoading(false);
     }
   };
 
   const handleFilterSelect = (type, value) => {
-    const newFilters = { ...activeFilters, [type]: value === activeFilters[type] ? '' : value };
+    // La lógica de "toggle" ahora se maneja en el Sidebar, 
+    // pero mantenemos la actualización del estado aquí.
+    const newFilters = { ...activeFilters, [type]: value };
     setActiveFilters(newFilters);
     applyFilters(newFilters);
   };
@@ -34,26 +43,43 @@ function App() {
   const applyFilters = async (filters) => {
     setLoading(true);
     try {
-      const res = await filterProducts(filters);
-      setProducts(res.data);
+      // Limpieza de parámetros: no enviamos strings vacíos
+      const cleanParams = {};
+      if (filters.category) cleanParams.category = filters.category;
+      if (filters.size) cleanParams.size = filters.size;
+
+      // Si no hay filtros activos, pedimos la lista completa
+      if (Object.keys(cleanParams).length === 0) {
+        const res = await getProducts();
+        setProducts(res.data);
+      } else {
+        const res = await filterProducts(cleanParams);
+        setProducts(res.data);
+      }
     } catch (error) {
-      console.error("Error filtrando:", error);
+      console.error("Error al filtrar:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => {
+    loadInitialData();
+  }, []);
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans">
+      {/* Navbar */}
       <nav className="bg-white border-b border-slate-200 sticky top-0 z-10 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
           <h1 className="text-2xl font-black tracking-tighter text-blue-600 uppercase">
             Lazarus<span className="text-slate-400">Shop</span>
           </h1>
           <button 
-            onClick={() => { setActiveFilters({category: '', size: ''}); loadData(); }}
+            onClick={() => { 
+              setActiveFilters({category: '', size: ''}); 
+              loadInitialData(); 
+            }}
             className="text-slate-500 hover:text-blue-600 text-sm font-bold uppercase tracking-widest transition-colors"
           >
             Resetear Filtros
@@ -62,7 +88,7 @@ function App() {
       </nav>
 
       <main className="max-w-7xl mx-auto px-6 py-12 flex flex-col md:flex-row gap-12">
-        {/* Sidebar de Filtros */}
+        {/* Sidebar Dinámico */}
         <Sidebar 
           categories={availableCategories} 
           sizes={availableSizes} 
@@ -70,7 +96,7 @@ function App() {
           activeFilters={activeFilters}
         />
 
-        {/* Grid de Productos */}
+        {/* Listado de Productos */}
         <div className="flex-1">
           {loading ? (
             <div className="flex justify-center items-center h-64">
@@ -79,12 +105,14 @@ function App() {
           ) : (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                {products.map(p => <ProductCard key={p.id} product={p} />)}
+                {products.map(p => (
+                  <ProductCard key={p.id} product={p} />
+                ))}
               </div>
               
               {products.length === 0 && (
                 <div className="text-center py-24 bg-white rounded-3xl border border-dashed border-slate-300">
-                  <p className="text-slate-400 text-lg font-medium">No hay productos con esos filtros.</p>
+                  <p className="text-slate-400 text-lg font-medium">No se encontraron productos con estos criterios.</p>
                 </div>
               )}
             </>
