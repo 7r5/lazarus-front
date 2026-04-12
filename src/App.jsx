@@ -73,7 +73,7 @@ function App() {
       <nav className="bg-white border-b border-slate-200 sticky top-0 z-10 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
           <h1 className="text-2xl font-black tracking-tighter text-blue-600 uppercase">
-            Lazarus<span className="text-slate-400">Shop</span>
+            Lazarus<span className="text-slate-400"> Shopee</span>
           </h1>
           <button 
             onClick={() => { 
