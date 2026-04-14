@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getProducts, filterProducts, getCategories, getSizes } from './services/api';
+import { getProducts, filterProducts, getCategories, getSizes, getSizesByCategory } from './services/api';
 import Sidebar from './components/Sidebar';
 import ProductCard from './components/ProductCard';
 
@@ -32,13 +32,33 @@ function App() {
     }
   };
 
-  const handleFilterSelect = (type, value) => {
-    // La lógica de "toggle" ahora se maneja en el Sidebar, 
-    // pero mantenemos la actualización del estado aquí.
-    const newFilters = { ...activeFilters, [type]: value };
-    setActiveFilters(newFilters);
-    applyFilters(newFilters);
-  };
+  const handleFilterSelect = async (type, value) => {
+  const newFilters = { ...activeFilters, [type]: value };
+
+  // LÓGICA PARA TALLAS DINÁMICAS
+  if (type === 'category') {
+    // 1. Siempre reseteamos la talla al cambiar de categoría
+    newFilters.size = ''; 
+
+    try {
+      if (value !== '') {
+        // 2. Si hay una categoría seleccionada, pedimos sus tallas específicas
+        const sizeRes = await getSizesByCategory(value);
+        setAvailableSizes(sizeRes.data);
+      } else {
+        // 3. Si se deseleccionó la categoría, volvemos a mostrar todas las tallas
+        const sizeRes = await getSizes();
+        setAvailableSizes(sizeRes.data);
+      }
+    } catch (error) {
+      console.error("Error al actualizar tallas:", error);
+    }
+  }
+
+  // Actualizamos estados y aplicamos filtros a los productos
+  setActiveFilters(newFilters);
+  applyFilters(newFilters);
+};
 
   const applyFilters = async (filters) => {
     setLoading(true);
