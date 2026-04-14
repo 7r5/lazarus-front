@@ -8,4 +8,4 @@ export const getProducts = () => api.get('');
 export const filterProducts = (params) => api.get('/filter', { params });
 export const getCategories = () => api.get('/getCategories');
 export const getSizes = () => api.get('/getSizes');
-export const getSizesFromCategory = (category) => api.get(`/getSizesFromCategory/${category}`);
+export const getSizesByCategory = (category) => api.get(`/getSizesFromCategory/${category}`);
