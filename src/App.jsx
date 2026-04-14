@@ -19,7 +19,7 @@ function App() {
       const [prodRes, catRes, sizeRes] = await Promise.all([
         getProducts(),
         getCategories(),
-        getSizes()
+        getSizesByCategory("none")
       ]);
       
       setProducts(prodRes.data);
