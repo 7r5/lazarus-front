@@ -1,5 +1,11 @@
 import { useEffect, useState } from 'react';
-import { getProducts, filterProducts, getCategories, getSizes, getSizesByCategory } from './services/api';
+import { 
+  getProducts, 
+  filterProducts, 
+  getCategories, 
+  getSizes, 
+  getSizesByCategory 
+} from './services/api';
 import Sidebar from './components/Sidebar';
 import ProductCard from './components/ProductCard';
 
@@ -8,18 +14,27 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [activeFilters, setActiveFilters] = useState({ category: '', size: '' });
   
-  // Estados dinámicos alimentados por la API
   const [availableCategories, setAvailableCategories] = useState([]);
   const [availableSizes, setAvailableSizes] = useState([]);
 
-  // Carga inicial de datos: Productos, Categorías y Tallas
+  // 1. EL WAKE-UP CALL: Una función simple para "tocar la puerta" del servidor
+  const wakeUpServer = async () => {
+    try {
+      // Llamamos a cualquier endpoint ligero solo para activar el contenedor de Render
+      await getCategories();
+      console.log("Servidor despertando...");
+    } catch (e) {
+      console.log("Esperando al servidor...");
+    }
+  };
+
   const loadInitialData = async () => {
     setLoading(true);
     try {
       const [prodRes, catRes, sizeRes] = await Promise.all([
         getProducts(),
         getCategories(),
-        getSizesByCategory("none")
+        getSizes()
       ]);
       
       setProducts(prodRes.data);
@@ -33,42 +48,34 @@ function App() {
   };
 
   const handleFilterSelect = async (type, value) => {
-  const newFilters = { ...activeFilters, [type]: value };
+    const newFilters = { ...activeFilters, [type]: value };
 
-  // LÓGICA PARA TALLAS DINÁMICAS
-  if (type === 'category') {
-    // 1. Siempre reseteamos la talla al cambiar de categoría
-    newFilters.size = ''; 
-
-    try {
-      if (value !== '') {
-        // 2. Si hay una categoría seleccionada, pedimos sus tallas específicas
-        const sizeRes = await getSizesByCategory(value);
-        setAvailableSizes(sizeRes.data);
-      } else {
-        // 3. Si se deseleccionó la categoría, volvemos a mostrar todas las tallas
-        const sizeRes = await getSizes();
-        setAvailableSizes(sizeRes.data);
+    if (type === 'category') {
+      newFilters.size = ''; 
+      try {
+        if (value !== '') {
+          const sizeRes = await getSizesByCategory(value);
+          setAvailableSizes(sizeRes.data);
+        } else {
+          const sizeRes = await getSizes();
+          setAvailableSizes(sizeRes.data);
+        }
+      } catch (error) {
+        console.error("Error al actualizar tallas:", error);
       }
-    } catch (error) {
-      console.error("Error al actualizar tallas:", error);
     }
-  }
 
-  // Actualizamos estados y aplicamos filtros a los productos
-  setActiveFilters(newFilters);
-  applyFilters(newFilters);
-};
+    setActiveFilters(newFilters);
+    applyFilters(newFilters);
+  };
 
   const applyFilters = async (filters) => {
     setLoading(true);
     try {
-      // Limpieza de parámetros: no enviamos strings vacíos
       const cleanParams = {};
       if (filters.category) cleanParams.category = filters.category;
       if (filters.size) cleanParams.size = filters.size;
 
-      // Si no hay filtros activos, pedimos la lista completa
       if (Object.keys(cleanParams).length === 0) {
         const res = await getProducts();
         setProducts(res.data);
@@ -84,12 +91,13 @@ function App() {
   };
 
   useEffect(() => {
+    // Ejecutamos el despertar y la carga de datos al montar el componente
+    wakeUpServer();
     loadInitialData();
   }, []);
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans">
-      {/* Navbar */}
       <nav className="bg-white border-b border-slate-200 sticky top-0 z-10 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
           <h1 className="text-2xl font-black tracking-tighter text-blue-600 uppercase">
@@ -108,7 +116,6 @@ function App() {
       </nav>
 
       <main className="max-w-7xl mx-auto px-6 py-12 flex flex-col md:flex-row gap-12">
-        {/* Sidebar Dinámico */}
         <Sidebar 
           categories={availableCategories} 
           sizes={availableSizes} 
@@ -116,11 +123,18 @@ function App() {
           activeFilters={activeFilters}
         />
 
-        {/* Listado de Productos */}
         <div className="flex-1">
           {loading ? (
-            <div className="flex justify-center items-center h-64">
+            <div className="flex flex-col justify-center items-center h-64 space-y-4">
               <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
+              <div className="text-center">
+                <p className="text-slate-600 font-bold animate-pulse">
+                  Despertando el servidor...
+                </p>
+                <p className="text-slate-400 text-xs mt-1">
+                  Esto puede tardar unos segundos en el plan gratuito de Render.
+                </p>
+              </div>
             </div>
           ) : (
             <>
@@ -132,7 +146,7 @@ function App() {
               
               {products.length === 0 && (
                 <div className="text-center py-24 bg-white rounded-3xl border border-dashed border-slate-300">
-                  <p className="text-slate-400 text-lg font-medium">No se encontraron productos con estos criterios.</p>
+                  <p className="text-slate-400 text-lg font-medium">No se encontraron productos.</p>
                 </div>
               )}
             </>
