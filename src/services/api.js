@@ -1,11 +1,12 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://lazarusproject.onrender.com/api/products'
+  baseURL: 'https://lazarusproject.onrender.com/api'
 });
 
-export const getProducts = () => api.get(''); 
-export const filterProducts = (params) => api.get('/filter', { params });
-export const getCategories = () => api.get('/getCategories');
-export const getSizes = () => api.get('/getSizes');
-export const getSizesByCategory = (category) => api.get(`/getSizesFromCategory?category=${category}`);
+export const getProducts = () => api.get('/products'); 
+export const filterProducts = (params) => api.get('/products/filter', { params });
+export const getCategories = () => api.get('/products/getCategories');
+export const getSizes = () => api.get('/products/getSizes');
+export const getSizesByCategory = (category) => api.get(`/products/getSizesFromCategory?category=${category}`);
+export const getProductComments = (productId) => api.get(`/comments/product/${productId}`);

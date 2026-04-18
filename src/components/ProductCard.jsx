@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-export default function ProductCard({ product }) {
+export default function ProductCard({ product, onViewDetails }) {
   // Estado para manejar si la imagen falló (404, 500, etc.)
   const [imgError, setImgError] = useState(false);
 
@@ -44,10 +44,11 @@ export default function ProductCard({ product }) {
           <span className="text-2xl font-black text-blue-600">
             ${product.price.toLocaleString('es-MX')}
           </span>
-          <button className="bg-slate-900 text-white p-2.5 rounded-xl hover:bg-blue-600 transition-colors shadow-sm active:scale-95">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M5 12h14M12 5l7 7-7 7"/>
-            </svg>
+          <button
+            onClick={onViewDetails}
+            className="bg-slate-900 text-white px-4 py-2 rounded-2xl hover:bg-blue-600 transition-colors shadow-sm active:scale-95"
+          >
+            Ver detalles
           </button>
         </div>
       </div>
