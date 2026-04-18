@@ -44,7 +44,7 @@ function App() {
       setAvailableCategories(Array.isArray(catRes.data) ? catRes.data : []);
       setAvailableSizes(Array.isArray(sizeRes.data) ? sizeRes.data : []);
       
-      console.log("Datos cargados:", {
+      console.log("Datos iniciales cargados:", {
         products: prodRes.data,
         categories: catRes.data,
         sizes: sizeRes.data
@@ -61,17 +61,22 @@ function App() {
   };
 
   const handleFilterSelect = async (type, value) => {
+    console.log("Filter select:", { type, value });
     const newFilters = { ...activeFilters, [type]: value };
 
     if (type === 'category') {
       newFilters.size = ''; 
       try {
         if (value !== '') {
+          console.log("Getting sizes for category:", value);
           const sizeRes = await getSizesByCategory(value);
-          setAvailableSizes(sizeRes.data);
+          console.log("Sizes response:", sizeRes.data);
+          setAvailableSizes(Array.isArray(sizeRes.data) ? sizeRes.data : []);
         } else {
+          console.log("Getting all sizes");
           const sizeRes = await getSizes();
-          setAvailableSizes(sizeRes.data);
+          console.log("All sizes response:", sizeRes.data);
+          setAvailableSizes(Array.isArray(sizeRes.data) ? sizeRes.data : []);
         }
       } catch (error) {
         console.error("Error al actualizar tallas:", error);
@@ -83,21 +88,29 @@ function App() {
   };
 
   const applyFilters = async (filters) => {
+    console.log("Applying filters:", filters);
     setLoading(true);
     try {
       const cleanParams = {};
       if (filters.category) cleanParams.category = filters.category;
       if (filters.size) cleanParams.size = filters.size;
 
+      console.log("Clean params:", cleanParams);
+
       if (Object.keys(cleanParams).length === 0) {
+        console.log("Getting all products");
         const res = await getProducts();
-        setProducts(res.data);
+        console.log("All products response:", res.data);
+        setProducts(Array.isArray(res.data) ? res.data : []);
       } else {
+        console.log("Filtering products with params:", cleanParams);
         const res = await filterProducts(cleanParams);
-        setProducts(res.data);
+        console.log("Filtered products response:", res.data);
+        setProducts(Array.isArray(res.data) ? res.data : []);
       }
     } catch (error) {
       console.error("Error al filtrar:", error);
+      setProducts([]);
     } finally {
       setLoading(false);
     }
