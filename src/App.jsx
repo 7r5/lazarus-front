@@ -39,11 +39,22 @@ function App() {
         getSizesByCategory("None")
       ]);
       
-      setProducts(prodRes.data);
-      setAvailableCategories(catRes.data);
-      setAvailableSizes(sizeRes.data);
+      // Asegurarse de que los datos sean arrays
+      setProducts(Array.isArray(prodRes.data) ? prodRes.data : []);
+      setAvailableCategories(Array.isArray(catRes.data) ? catRes.data : []);
+      setAvailableSizes(Array.isArray(sizeRes.data) ? sizeRes.data : []);
+      
+      console.log("Datos cargados:", {
+        products: prodRes.data,
+        categories: catRes.data,
+        sizes: sizeRes.data
+      });
     } catch (error) {
       console.error("Error cargando datos iniciales:", error);
+      // En caso de error, asegurarse de que tengamos arrays vacíos
+      setProducts([]);
+      setAvailableCategories([]);
+      setAvailableSizes([]);
     } finally {
       setLoading(false);
     }
@@ -148,8 +159,8 @@ function App() {
 
       <main className="max-w-7xl mx-auto px-6 py-12 flex flex-col md:flex-row gap-12">
         <Sidebar 
-          categories={availableCategories} 
-          sizes={availableSizes} 
+          categories={Array.isArray(availableCategories) ? availableCategories : []} 
+          sizes={Array.isArray(availableSizes) ? availableSizes : []} 
           onFilterSelect={handleFilterSelect}
           activeFilters={activeFilters}
         />
@@ -170,14 +181,16 @@ function App() {
           ) : (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                {products.map(p => (
+                {Array.isArray(products) && products.map(p => (
                   <ProductCard key={p.id} product={p} onViewDetails={() => setSelectedProduct(p)} />
                 ))}
               </div>
               
-              {products.length === 0 && (
+              {(!Array.isArray(products) || products.length === 0) && (
                 <div className="text-center py-24 bg-white rounded-3xl border border-dashed border-slate-300">
-                  <p className="text-slate-400 text-lg font-medium">No se encontraron productos.</p>
+                  <p className="text-slate-400 text-lg font-medium">
+                    {Array.isArray(products) ? "No se encontraron productos." : "Error cargando productos."}
+                  </p>
                 </div>
               )}
             </>

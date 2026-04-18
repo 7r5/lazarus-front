@@ -15,7 +15,7 @@ export default function Sidebar({ categories, sizes, onFilterSelect, activeFilte
           Categorías
         </h3>
         <ul className="space-y-1.5">
-          {categories.map((cat) => (
+          {Array.isArray(categories) && categories.map((cat) => (
             <li key={cat}>
               <button
                 onClick={() => handleToggle('category', cat)}
@@ -38,7 +38,7 @@ export default function Sidebar({ categories, sizes, onFilterSelect, activeFilte
           Tallas Disponibles
         </h3>
         <div className="grid grid-cols-3 gap-2">
-          {sizes.map((size) => (
+          {Array.isArray(sizes) && sizes.map((size) => (
             <button
               key={size}
               onClick={() => handleToggle('size', size)}
