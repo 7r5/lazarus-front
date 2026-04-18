@@ -39,15 +39,23 @@ function App() {
         getSizesByCategory("None")
       ]);
       
-      // Asegurarse de que los datos sean arrays
-      setProducts(Array.isArray(prodRes.data) ? prodRes.data : []);
+      // Limpiar los datos de productos para evitar recursión infinita en comments
+      const cleanProducts = Array.isArray(prodRes.data) ? prodRes.data.map(product => ({
+        ...product,
+        comments: undefined // Remover comments para evitar problemas de renderizado
+      })) : [];
+      
+      setProducts(cleanProducts);
       setAvailableCategories(Array.isArray(catRes.data) ? catRes.data : []);
       setAvailableSizes(Array.isArray(sizeRes.data) ? sizeRes.data : []);
       
       console.log("Datos iniciales cargados:", {
-        products: prodRes.data,
+        products: cleanProducts,
         categories: catRes.data,
-        sizes: sizeRes.data
+        sizes: sizeRes.data,
+        // Comparar categorías
+        productCategories: [...new Set(cleanProducts.map(p => p.category))],
+        sidebarCategories: catRes.data
       });
     } catch (error) {
       console.error("Error cargando datos iniciales:", error);
@@ -62,6 +70,8 @@ function App() {
 
   const handleFilterSelect = async (type, value) => {
     console.log("Filter select:", { type, value });
+    console.log("Available categories:", availableCategories);
+    console.log("Current products categories:", [...new Set(products.map(p => p.category))]);
     const newFilters = { ...activeFilters, [type]: value };
 
     if (type === 'category') {
@@ -101,12 +111,22 @@ function App() {
         console.log("Getting all products");
         const res = await getProducts();
         console.log("All products response:", res.data);
-        setProducts(Array.isArray(res.data) ? res.data : []);
+        // Limpiar comments para evitar recursión
+        const cleanProducts = Array.isArray(res.data) ? res.data.map(product => ({
+          ...product,
+          comments: undefined
+        })) : [];
+        setProducts(cleanProducts);
       } else {
         console.log("Filtering products with params:", cleanParams);
         const res = await filterProducts(cleanParams);
         console.log("Filtered products response:", res.data);
-        setProducts(Array.isArray(res.data) ? res.data : []);
+        // Limpiar comments para evitar recursión
+        const cleanProducts = Array.isArray(res.data) ? res.data.map(product => ({
+          ...product,
+          comments: undefined
+        })) : [];
+        setProducts(cleanProducts);
       }
     } catch (error) {
       console.error("Error al filtrar:", error);
