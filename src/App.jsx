@@ -42,20 +42,26 @@ function App() {
       // Limpiar los datos de productos para evitar recursión infinita en comments
       const cleanProducts = Array.isArray(prodRes.data) ? prodRes.data.map(product => ({
         ...product,
-        comments: undefined // Remover comments para evitar problemas de renderizado
+        comments: undefined, // Remover comments para evitar problemas de renderizado
+        category: product.category ? product.category.toLowerCase() : product.category // Normalizar categorías a minúsculas
       })) : [];
       
+      // Normalizar categorías del sidebar a minúsculas
+      const normalizedCategories = Array.isArray(catRes.data) ? catRes.data.map(cat => 
+        typeof cat === 'string' ? cat.toLowerCase() : cat
+      ) : [];
+      
       setProducts(cleanProducts);
-      setAvailableCategories(Array.isArray(catRes.data) ? catRes.data : []);
+      setAvailableCategories(normalizedCategories);
       setAvailableSizes(Array.isArray(sizeRes.data) ? sizeRes.data : []);
       
       console.log("Datos iniciales cargados:", {
-        products: cleanProducts,
-        categories: catRes.data,
+        products: cleanProducts.slice(0, 2), // Solo mostrar primeros 2 para no saturar
+        categories: normalizedCategories,
         sizes: sizeRes.data,
         // Comparar categorías
         productCategories: [...new Set(cleanProducts.map(p => p.category))],
-        sidebarCategories: catRes.data
+        sidebarCategories: normalizedCategories
       });
     } catch (error) {
       console.error("Error cargando datos iniciales:", error);
@@ -102,7 +108,7 @@ function App() {
     setLoading(true);
     try {
       const cleanParams = {};
-      if (filters.category) cleanParams.category = filters.category;
+      if (filters.category) cleanParams.category = filters.category.toLowerCase(); // Normalizar a minúsculas
       if (filters.size) cleanParams.size = filters.size;
 
       console.log("Clean params:", cleanParams);
@@ -111,20 +117,22 @@ function App() {
         console.log("Getting all products");
         const res = await getProducts();
         console.log("All products response:", res.data);
-        // Limpiar comments para evitar recursión
+        // Limpiar comments y normalizar categorías
         const cleanProducts = Array.isArray(res.data) ? res.data.map(product => ({
           ...product,
-          comments: undefined
+          comments: undefined,
+          category: product.category ? product.category.toLowerCase() : product.category
         })) : [];
         setProducts(cleanProducts);
       } else {
         console.log("Filtering products with params:", cleanParams);
         const res = await filterProducts(cleanParams);
         console.log("Filtered products response:", res.data);
-        // Limpiar comments para evitar recursión
+        // Limpiar comments y normalizar categorías
         const cleanProducts = Array.isArray(res.data) ? res.data.map(product => ({
           ...product,
-          comments: undefined
+          comments: undefined,
+          category: product.category ? product.category.toLowerCase() : product.category
         })) : [];
         setProducts(cleanProducts);
       }
