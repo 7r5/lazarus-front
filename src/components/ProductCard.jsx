@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 export default function ProductCard({ product, onViewDetails }) {
   // Estado para manejar si la imagen falló (404, 500, etc.)
@@ -44,12 +45,21 @@ export default function ProductCard({ product, onViewDetails }) {
           <span className="text-2xl font-black text-blue-600">
             ${product.price.toLocaleString('es-MX')}
           </span>
-          <button
-            onClick={onViewDetails}
-            className="bg-slate-900 text-white px-4 py-2 rounded-2xl hover:bg-blue-600 transition-colors shadow-sm active:scale-95"
-          >
-            Ver detalles
-          </button>
+          {onViewDetails ? (
+            <button
+              onClick={onViewDetails}
+              className="bg-slate-900 text-white px-4 py-2 rounded-2xl hover:bg-blue-600 transition-colors shadow-sm active:scale-95"
+            >
+              Ver detalles
+            </button>
+          ) : (
+            <Link
+              to={`/products/${product.id}`}
+              className="inline-flex items-center justify-center bg-slate-900 text-white px-4 py-2 rounded-2xl hover:bg-blue-600 transition-colors shadow-sm active:scale-95"
+            >
+              Ver detalles
+            </Link>
+          )}
         </div>
       </div>
     </div>

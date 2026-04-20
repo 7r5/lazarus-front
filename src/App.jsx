@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { 
   getProducts, 
   filterProducts, 
@@ -8,14 +9,12 @@ import {
 } from './services/api';
 import Sidebar from './components/Sidebar';
 import ProductCard from './components/ProductCard';
-import ProductDetails from './components/ProductDetails';
+import ProductDetailsPage from './components/ProductDetailsPage';
 
 function App() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [activeFilters, setActiveFilters] = useState({ category: '', size: '' });
-  const [selectedProduct, setSelectedProduct] = useState(null);
-  
   const [availableCategories, setAvailableCategories] = useState([]);
   const [availableSizes, setAvailableSizes] = useState([]);
 
@@ -150,37 +149,51 @@ function App() {
     loadInitialData();
   }, []);
 
-  if (selectedProduct) {
-    return (
-      <div className="min-h-screen bg-slate-50 text-slate-900 font-sans">
-        <nav className="bg-white border-b border-slate-200 sticky top-0 z-10 shadow-sm">
-          <div className="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
-            <h1 className="text-2xl font-black tracking-tighter text-blue-600 uppercase">
-              Lazarus<span className="text-slate-400"> Shopee</span>
-            </h1>
-            <button 
-              onClick={() => {
-                setSelectedProduct(null);
-              }}
-              className="text-slate-500 hover:text-blue-600 text-sm font-bold uppercase tracking-widest transition-colors"
-            >
-              Volver al catálogo
-            </button>
-          </div>
-        </nav>
+  const homePage = (
+    <div className="max-w-7xl mx-auto px-6 py-12 flex flex-col md:flex-row gap-12">
+      <Sidebar 
+        categories={Array.isArray(availableCategories) ? availableCategories : []} 
+        sizes={Array.isArray(availableSizes) ? availableSizes : []} 
+        onFilterSelect={handleFilterSelect}
+        activeFilters={activeFilters}
+      />
 
-        <main className="max-w-7xl mx-auto px-6 py-12">
-          <ProductDetails 
-            product={selectedProduct} 
-            onBack={() => setSelectedProduct(null)}
-          />
-        </main>
+      <div className="flex-1">
+        {loading ? (
+          <div className="flex flex-col justify-center items-center h-64 space-y-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
+            <div className="text-center">
+              <p className="text-slate-600 font-bold animate-pulse">
+                Despertando el servidor...
+              </p>
+              <p className="text-slate-400 text-xs mt-1">
+                Esto puede tardar unos segundos en el plan gratuito de Render.
+              </p>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              {Array.isArray(products) && products.map(p => (
+                <ProductCard key={p.id} product={p} />
+              ))}
+            </div>
+             
+            {(!Array.isArray(products) || products.length === 0) && (
+              <div className="text-center py-24 bg-white rounded-3xl border border-dashed border-slate-300">
+                <p className="text-slate-400 text-lg font-medium">
+                  {Array.isArray(products) ? "No se encontraron productos." : "Error cargando productos."}
+                </p>
+              </div>
+            )}
+          </>
+        )}
       </div>
-    );
-  }
+    </div>
+  );
 
   return (
-      <div className="min-h-screen bg-slate-50 text-slate-900 font-sans">
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans">
       <nav className="bg-white border-b border-slate-200 sticky top-0 z-10 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
           <h1 className="text-2xl font-black tracking-tighter text-blue-600 uppercase">
@@ -198,45 +211,12 @@ function App() {
         </div>
       </nav>
 
-      <main className="max-w-7xl mx-auto px-6 py-12 flex flex-col md:flex-row gap-12">
-        <Sidebar 
-          categories={Array.isArray(availableCategories) ? availableCategories : []} 
-          sizes={Array.isArray(availableSizes) ? availableSizes : []} 
-          onFilterSelect={handleFilterSelect}
-          activeFilters={activeFilters}
-        />
-
-        <div className="flex-1">
-          {loading ? (
-            <div className="flex flex-col justify-center items-center h-64 space-y-4">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
-              <div className="text-center">
-                <p className="text-slate-600 font-bold animate-pulse">
-                  Despertando el servidor...
-                </p>
-                <p className="text-slate-400 text-xs mt-1">
-                  Esto puede tardar unos segundos en el plan gratuito de Render.
-                </p>
-              </div>
-            </div>
-          ) : (
-            <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                {Array.isArray(products) && products.map(p => (
-                  <ProductCard key={p.id} product={p} onViewDetails={() => setSelectedProduct(p)} />
-                ))}
-              </div>
-              
-              {(!Array.isArray(products) || products.length === 0) && (
-                <div className="text-center py-24 bg-white rounded-3xl border border-dashed border-slate-300">
-                  <p className="text-slate-400 text-lg font-medium">
-                    {Array.isArray(products) ? "No se encontraron productos." : "Error cargando productos."}
-                  </p>
-                </div>
-              )}
-            </>
-          )}
-        </div>
+      <main className="max-w-7xl mx-auto px-6 py-12">
+        <Routes>
+          <Route path="/" element={homePage} />
+          <Route path="/products/:id" element={<ProductDetailsPage />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       </main>
     </div>
   );
