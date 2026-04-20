@@ -28,7 +28,7 @@ export default function CommentsSection({ comments, loading }) {
                 </div>
                 <span className="rounded-full bg-blue-600 px-3 py-1 text-sm font-bold text-white">{comment.rating} ★</span>
               </div>
-              <p className="mt-4 text-slate-600 leading-7">{comment.text}</p>
+              <p className="mt-4 text-slate-600 leading-7">{comment.content}</p>
             </article>
           ))}
         </div>
