@@ -149,49 +149,6 @@ function App() {
     loadInitialData();
   }, []);
 
-  const homePage = (
-    <div className="max-w-7xl mx-auto px-6 py-12 flex flex-col md:flex-row gap-12">
-      <Sidebar 
-        categories={Array.isArray(availableCategories) ? availableCategories : []} 
-        sizes={Array.isArray(availableSizes) ? availableSizes : []} 
-        onFilterSelect={handleFilterSelect}
-        activeFilters={activeFilters}
-      />
-
-      <div className="flex-1">
-        {loading ? (
-          <div className="flex flex-col justify-center items-center h-64 space-y-4">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
-            <div className="text-center">
-              <p className="text-slate-600 font-bold animate-pulse">
-                Despertando el servidor...
-              </p>
-              <p className="text-slate-400 text-xs mt-1">
-                Esto puede tardar unos segundos en el plan gratuito de Render.
-              </p>
-            </div>
-          </div>
-        ) : (
-          <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-              {Array.isArray(products) && products.map(p => (
-                <ProductCard key={p.id} product={p} />
-              ))}
-            </div>
-             
-            {(!Array.isArray(products) || products.length === 0) && (
-              <div className="text-center py-24 bg-white rounded-3xl border border-dashed border-slate-300">
-                <p className="text-slate-400 text-lg font-medium">
-                  {Array.isArray(products) ? "No se encontraron productos." : "Error cargando productos."}
-                </p>
-              </div>
-            )}
-          </>
-        )}
-      </div>
-    </div>
-  );
-
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans">
       <nav className="bg-white border-b border-slate-200 sticky top-0 z-10 shadow-sm">
@@ -211,13 +168,58 @@ function App() {
         </div>
       </nav>
 
-      <main className="max-w-7xl mx-auto px-6 py-12">
-        <Routes>
-          <Route path="/" element={homePage} />
-          <Route path="/products/:id" element={<ProductDetailsPage />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </main>
+      <Routes>
+        <Route path="/" element={
+          <main className="max-w-7xl mx-auto px-6 py-12 flex flex-col md:flex-row gap-12">
+            <Sidebar 
+              categories={Array.isArray(availableCategories) ? availableCategories : []} 
+              sizes={Array.isArray(availableSizes) ? availableSizes : []} 
+              onFilterSelect={handleFilterSelect}
+              activeFilters={activeFilters}
+            />
+
+            <div className="flex-1">
+              {loading ? (
+                <div className="flex flex-col justify-center items-center h-64 space-y-4">
+                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
+                  <div className="text-center">
+                    <p className="text-slate-600 font-bold animate-pulse">
+                      Despertando el servidor...
+                    </p>
+                    <p className="text-slate-400 text-xs mt-1">
+                      Esto puede tardar unos segundos en el plan gratuito de Render.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {Array.isArray(products) && products.map(p => (
+                      <ProductCard key={p.id} product={p} />
+                    ))}
+                  </div>
+                   
+                  {(!Array.isArray(products) || products.length === 0) && (
+                    <div className="text-center py-24 bg-white rounded-3xl border border-dashed border-slate-300">
+                      <p className="text-slate-400 text-lg font-medium">
+                        {Array.isArray(products) ? "No se encontraron productos." : "Error cargando productos."}
+                      </p>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </main>
+        } />
+
+        <Route path="/products/:id" element={
+          <main className="max-w-7xl mx-auto px-6 py-12">
+            <ProductDetailsPage />
+          </main>
+        } />
+
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </div>
   );
 }
